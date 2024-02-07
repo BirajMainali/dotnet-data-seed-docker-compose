@@ -1,0 +1,42 @@
+﻿version: "0.1"
+
+networks:
+  dotnet-data-seed-docker:
+    driver: bridge
+
+services:
+  dotnet-data-seed-example:
+    container_name: dotnet-data-seed-example
+    image: docker.io/library/dotnet-data-seed-example
+    depends_on:
+      - dotnet-data-seed-db
+    build:
+      context: .
+      dockerfile: dotnet-data-seed-docker-compose/Dockerfile
+    ports:
+      - "8081:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=dotnet-data-seed-db;Port=5432;Database=dotnet_data_seed;Username=postgres;Password=admin
+      - ASPNETCORE_URLS=http://+:80
+    networks:
+      - dotnet-data-seed-docker
+
+  dotnet-data-seed-db:
+    container_name: dotnet-data-seed-db
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: dotnet-data-seed
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    networks:
+      - dotnet-data-seed-docker
+    ports:
+      - "5430:5432"
+    restart: always
+    volumes:
+      - dotnet-data-seed-db:/var/lib/postgresql/data
+
+volumes:
+  dotnet-data-seed-db:
+    
